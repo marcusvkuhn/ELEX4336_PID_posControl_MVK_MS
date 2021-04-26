@@ -11,23 +11,23 @@
  *      Author: Marcus
  */
 
-void initPidTimerA1(int freq){
-    volatile int m, validPwmFreq = -1;
+//void initPidTimerA1(int freq){
+//    volatile int m, validPwmFreq = -1;
+//
+//    // TA1CCTL0, use ACLK (32786hz), /1, up mode, clear and enable interrupts.
+//    TA1CTL = TASSEL_1 | ID__1 | MC_1 | TACLR | TAIE;
+//    TA1EX0 |= TAIDEX_0;    // expansion clk divider to 1
+//
+//    // find m value for given freq
+//    m = (int)(ACLKFREQ/freq);
+//
+//    /* write m to TA1CCR0,
+//     timer will count up it and trigger an interrupt to set control loop up update rate */
+//    if(m >= 9 && m <= 65356)
+//        TA1CCR0 = m - 1;
+//}
 
-    // TA1CCTL0, use ACLK (32786hz), /1, up mode, clear and enable interrupts.
-    TA1CTL = TASSEL_1 | ID__1 | MC_1 | TACLR | TAIE;
-    TA1EX0 |= TAIDEX_0;    // expansion clk divider to 1
-
-    // find m value for given freq
-    m = (int)(ACLKFREQ/freq);
-
-    /* write m to TA1CCR0,
-     timer will count up it and trigger an interrupt to set control loop up update rate */
-    if(m >= 9 && m <= 65356)
-        TA1CCR0 = m - 1;
-}
-
-void pidControlLoop(int Kp, int Kd, int Ki, int dt){
+void pidControlLoop(int Kp, int Ki, int Kd, int dt){
 
     volatile int clamping = 0;
 
@@ -60,7 +60,7 @@ void pidControlLoop(int Kp, int Kd, int Ki, int dt){
     if (clamping)
         controlCmd = MAX_COMMAND;
 
-//    // Anti-windup
+    // Anti-windup
 //    if(abs(controlCmd) >= MAX_COMMAND && (((error >= 0) && (errorInt >= 0)) || ((error < 0) && (errorInt < 0)))){
 //
 //        if(antiWindup)

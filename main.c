@@ -16,7 +16,7 @@ int main(void)
 
 	while(1){
 	    // if updateTime == 1
-	    pidControlLoop(500, 25, 375, 0.01);
+	    pidControlLoop(500, 375, 25, 0.01);
 	}
 
 	return 0;

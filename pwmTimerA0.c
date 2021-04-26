@@ -21,9 +21,9 @@ unsigned int timerA0Init(unsigned int pwmFreq){
     validFreqInit = timerA0PwmFreqSet(pwmFreq);
 
     if(!validFreqInit){
-        TA0CTL = TASSEL_2 | ID__1 | MC_1 | TACLR; // source select: SMCLK | input divider: 1 | mode control: UP | clear clk
-        // clock divisor is now 1
-        TA0EX0 |= TAIDEX_0;    // expansion clk divider to 1
+        TA0CTL = TASSEL_2 | ID__8 | MC_1 | TACLR; // source select: SMCLK (20 MHz | input divider: 8 | mode control: UP | clear clk)
+
+        TA0EX0 |= TAIDEX_7;    // expansion clk divider to 8
         TA0CCTL1 |= OUTMOD_7;     // set to output mode
 
         // set TA0.1 to be output @ P1.2
@@ -36,13 +36,11 @@ unsigned int timerA0Init(unsigned int pwmFreq){
     return validFreqInit;
 }
 
-
 char timerA0PwmFreqSet(unsigned int pwmFreq){
     volatile int m, validPwmFreq = -1;
     volatile double period;
 
-    m = (int)(SMCLKFREQ/pwmFreq);
-
+    m = (int)(SMCLK_20MHZ_D16/pwmFreq);
 
     if(m >= 9 && m <= 65356){
         TA0CCR0 = m - 1;
