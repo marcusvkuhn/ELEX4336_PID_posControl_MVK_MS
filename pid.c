@@ -33,7 +33,7 @@ void pidControlLoop(int Kp, int Ki, int Kd, int dt){
     volatile int clamping = 0;
 
     // Control Logic
-    error = posDelta - posCount;
+    error = posTarget - posCount;
 
     errorInt = errorInt + dt*error;
 

@@ -15,7 +15,7 @@
 void initPidTimerA1(int freq);
 void pidControlLoop(int Kp, int Kd, int Ki, int dt);
 
-volatile int posDelta,
+volatile int posTarget,
              //Kp, Kd, Ki,
              antiWindup;
 
