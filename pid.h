@@ -10,10 +10,11 @@
 
 #define ACLKFREQ 32786
 
-#define MAX_COMMAND 65535
+#define MAX_COMMAND 100
+#define DEG_PER_PULSE 0.07826086956
 
 void initPidTimerA1(int freq);
-void pidControlLoop(int Kp, int Kd, int Ki, int dt);
+void pidControlLoop(int Kp, int Kd, int Ki, double dt);
 
 volatile int posTarget,
              //Kp, Kd, Ki,
@@ -25,7 +26,9 @@ volatile double error,
                 errorInt,
                 errorDeriv,
                 errorPrev,
-                dt;
+                dt,
+                posCountDeg,
+                posTargetDeg;
 
 //volatile int control_type = 10;
 //volatile int antiWindup;

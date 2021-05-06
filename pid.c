@@ -4,6 +4,7 @@
 #include "pid.h"
 #include "quadEncDec.h"
 #include "pwmTimerA0.h"
+#include "vnh7070API.h"
 
 /*
  * pid.c
@@ -28,12 +29,17 @@
 //        TA1CCR0 = m - 1;
 //}
 
-void pidControlLoop(int Kp, int Ki, int Kd, int dt){
+void pidControlLoop(int Kp, int Ki, int Kd, double dt){
 
-    volatile int clamping = 0;
+
+    volatile int clamping = 0, sign = 0;    // sign = 1 is positive, sign = -1 is negative;
+
+    posCountDeg = posCount * DEG_PER_PULSE;
+    posTargetDeg = posTarget * DEG_PER_PULSE;
+
 
     // Control Logic
-    error = posTarget - posCount;
+    error = posTargetDeg - posCountDeg;
 
     errorInt = errorInt + dt*error;
 
@@ -47,7 +53,14 @@ void pidControlLoop(int Kp, int Ki, int Kd, int dt){
     // result   =   (condition)   ?  (value if true)  :  (value if false)
     // saves value to result
 
-    controlCmdAW = (abs(controlCmd) > MAX_COMMAND) ? MAX_COMMAND : controlCmd;
+    if(controlCmd >= 0){
+        controlCmdAW = (controlCmd > MAX_COMMAND) ? MAX_COMMAND : controlCmd;
+        sign = 1;
+    }
+    else if(controlCmd < 0){
+        controlCmdAW = (controlCmd < -MAX_COMMAND) ? MAX_COMMAND : controlCmd;
+        sign = -1;
+    }
 
     // compare the two actuator commands
 
@@ -58,33 +71,20 @@ void pidControlLoop(int Kp, int Ki, int Kd, int dt){
             clamping = 1;
     }
 
-    if (clamping)
+    if (clamping && sign == 1)
         controlCmd = MAX_COMMAND;
-
-    // Anti-windup
-//    if(abs(controlCmd) >= MAX_COMMAND && (((error >= 0) && (errorInt >= 0)) || ((error < 0) && (errorInt < 0)))){
-//
-//        if(antiWindup)
-//            errorInt = errorInt;
-//        else  // If no antiwindup
-//            errorInt = errorInt + dt*1*error;  // rectangular integration
-//        //P1OUT &= ~BIT0;
-//    }
-//    else
-//    {
-//        errorInt = errorInt + dt*1*error;  // rectangular integration
-//        //P1OUT |= BIT0;
-//    }
+    else if(clamping && sign == -1)
+        controlCmd = -MAX_COMMAND;
 
     errorPrev = error;
 
     if(controlCmd >= 0){
+        timerA0DutyCycleSet(abs(controlCmd));
         vnh7070CW(currentDS);
-        timerA0DutyCycleSet(abs(controlCmd));
     }
-    else{
-        vnh7070CCW(currentDS);
+    else if(controlCmd < 0){
         timerA0DutyCycleSet(abs(controlCmd));
+        vnh7070CCW(currentDS);
     }
 
 }
