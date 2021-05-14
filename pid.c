@@ -13,30 +13,11 @@
  *      Author: Marcus
  */
 
-//void initPidTimerA1(int freq){
-//    volatile int m, validPwmFreq = -1;
-//
-//    // TA1CCTL0, use ACLK (32786hz), /1, up mode, clear and enable interrupts.
-//    TA1CTL = TASSEL_1 | ID__1 | MC_1 | TACLR | TAIE;
-//    TA1EX0 |= TAIDEX_0;    // expansion clk divider to 1
-//
-//    // find m value for given freq
-//    m = (int)(ACLKFREQ/freq);
-//
-//    /* write m to TA1CCR0,
-//     timer will count up it and trigger an interrupt to set control loop up update rate */
-//    if(m >= 9 && m <= 65356)
-//        TA1CCR0 = m - 1;
-//}
-
 void pidControlLoop(int Kp, int Ki, int Kd, double dt){
 
-
-    volatile int clamping = 0, sign = 0;    // sign = 1 is positive, sign = -1 is negative;
+    volatile int clamping = 0, numClamping = 0, sign = 0;    // sign = 1 is positive, sign = -1 is negative;
 
     posCountDeg = posCount * DEG_PER_PULSE;
-    posTargetDeg = posTarget * DEG_PER_PULSE;
-
 
     // Control Logic
     error = posTargetDeg - posCountDeg;
@@ -44,8 +25,6 @@ void pidControlLoop(int Kp, int Ki, int Kd, double dt){
     errorInt = errorInt + dt*error;
 
     errorDeriv = (error-errorPrev)/dt;
-
-    // prototype clamping algorithm
 
     controlCmd = Kp*error + Ki*errorInt + Kd*errorDeriv;
 
@@ -63,7 +42,6 @@ void pidControlLoop(int Kp, int Ki, int Kd, double dt){
     }
 
     // compare the two actuator commands
-
     if (controlCmd != controlCmdAW){
         // checks whether sign of error and control command are equal by XOR
         // if they are both equal (00 or 11), XOR returns 0
@@ -79,12 +57,11 @@ void pidControlLoop(int Kp, int Ki, int Kd, double dt){
     errorPrev = error;
 
     if(controlCmd >= 0){
-        timerA0DutyCycleSet(abs(controlCmd));
         vnh7070CW(currentDS);
-    }
-    else if(controlCmd < 0){
         timerA0DutyCycleSet(abs(controlCmd));
-        vnh7070CCW(currentDS);
     }
-
+    else if(controlCmd <= 0){
+        vnh7070CCW(currentDS);
+        timerA0DutyCycleSet(abs(controlCmd));
+    }
 }

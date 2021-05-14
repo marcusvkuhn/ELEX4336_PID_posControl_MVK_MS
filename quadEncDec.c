@@ -3,6 +3,7 @@
 
 #include "quadEncDec.h"
 #include "usciUart.h"
+#include "pid.h"
 //#include "usciSpi.h"
 
 /*
@@ -42,10 +43,14 @@ void initEncDec(void){
 }
 
 #pragma vector = PORT2_VECTOR
-__interrupt void PORT2_ISR(void) {
-
+ __interrupt void PORT2_ISR(void) {
     switch(__even_in_range(P2IV,0xF)) {
-        case 0x04: posCount = 0;            // P2.1 Interrupt, reset posCount
+        case 0x04:
+            posCount = 0;            // P2.1 Interrupt, reset posCount
+            error = 0;               // reset errors
+            errorPrev = 0;
+            errorInt = 0;
+            errorDeriv = 0;
             break;
         case 0x0A:                          // P2.4 Interrupt, no break here, case A and C share the same code
         case 0x0C:                          // P2.5 Interrupt
@@ -74,19 +79,5 @@ __interrupt void PORT2_ISR(void) {
             break;
         default: break;
     }
-    // enable screen write
-    screenWrite = 1;
     P2IFG = 0; // clear interrupt flag after its serviced
-}
-
-void testEncoder(void){
-
-    char qEncStateCW[8] = {0x2, 0x3, 0x1, 0x0, 0x2, 0x3, 0x1, 0x0}; //CW
-    char qEncStateCCW[8] = {0x1, 0x3, 0x2, 0x0, 0x1, 0x3, 0x2, 0x0}; //CWW
-
-    unsigned int var;
-    for (var = 0; var < 8; ++var)
-        P3OUT = qEncStateCW[var];
-    for (var = 0; var < 8; ++var)
-        P3OUT = qEncStateCCW[var];
 }

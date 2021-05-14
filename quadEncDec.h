@@ -10,7 +10,6 @@
 
 //-- func prototypes
 void initEncDec(void);
-void testEncoder(void);
 
 //-- macros
 #define     CH_A        BIT4
@@ -22,8 +21,7 @@ void testEncoder(void);
 #define     B_BIT       BIT0
 
 //-- global vars
-int posCount,
-    screenWrite;
+int posCount;
 
 volatile unsigned char prevState,
                        currState,

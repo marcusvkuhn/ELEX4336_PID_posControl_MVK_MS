@@ -30,7 +30,7 @@ unsigned int timerA0Init(unsigned int pwmFreq){
         P1DIR |= BIT2;
         P1SEL |= BIT2;
 
-        timerA0DutyCycleSet(0);
+        timerA0DutyCycleSet(0);             //initialize timer with 0% duty cycle
     }
 
     return validFreqInit;
