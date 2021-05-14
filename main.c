@@ -22,7 +22,6 @@
 #include <msp430.h>
 #include <stdio.h>
 
-
 #include "quadEncDec.h"
 #include "pid.h"
 #include "pwmTimerA0.h"
@@ -30,28 +29,26 @@
 #include "usciUart.h"
 #include "vnh7070API.h"
 
-
 #define dcoFreq 20 // MHz.
 
 /**
  * main.c
  */
-
 int main(void){
 
 	WDTCTL = WDTPW | WDTHOLD;	// stop watchdog timer
 	
-    unsigned char oscFail = 1;
+  unsigned char oscFail = 1;
 
-    // set clock frequency to 20MHz
-    ucsSelSource(1,1,1,1);
-    oscFail = ucsDcoFreqSet (dcoFreq, 2, 1);          //set sclk to dcoFreq
-    if (oscFail)
-      return 1;
+  // set clock frequency to 20MHz
+  ucsSelSource(1,1,1,1);
+  oscFail = ucsDcoFreqSet (dcoFreq, 2, 1);          //set sclk to dcoFreq
+  if (oscFail)
+    return 1;
 
 	initEncDec();
 	usciA1UartInit();
-    timerA0Init(10000); // set PWM freq
+  timerA0Init(10000); // set PWM freq
 
 	// example -90deg move
 	posTargetDeg = -90;
@@ -65,4 +62,3 @@ int main(void){
     }
     return 0;
 }
-

@@ -15,7 +15,6 @@
 
 void pidControlLoop(int Kp, int Ki, int Kd, double dt){
 
-
     volatile int clamping = 0, numClamping = 0, sign = 0;    // sign = 1 is positive, sign = -1 is negative;
 
     posCountDeg = posCount * DEG_PER_PULSE;
@@ -33,7 +32,7 @@ void pidControlLoop(int Kp, int Ki, int Kd, double dt){
     // result   =   (condition)   ?  (value if true)  :  (value if false)
     // saves value to result
 
-    if(controlCmd > 0){
+    if(controlCmd >= 0){
         controlCmdAW = (controlCmd > MAX_COMMAND) ? MAX_COMMAND : controlCmd;
         sign = 1;
     }
@@ -65,5 +64,4 @@ void pidControlLoop(int Kp, int Ki, int Kd, double dt){
         vnh7070CCW(currentDS);
         timerA0DutyCycleSet(abs(controlCmd));
     }
-
 }

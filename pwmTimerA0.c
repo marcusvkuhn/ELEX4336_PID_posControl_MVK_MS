@@ -59,5 +59,19 @@ char timerA0DutyCycleSet (unsigned char dutyCycle){
         currentDS = dutyCycle;
         validDS = 0;
     }
+        //TA0CCR1 = (int)(TA0CCR0 * n);
+
+//        if(dutyCycle - currentDS > 4)
+//            for(i = currentDS; i <= dutyCycle; i++){
+//                n = (i * 0.1);
+//                __delay_cycles(RAMP_DELAY);          // 50ms delay per duty cycle change
+//            }
+//        else
+//            n = (dutyCycle * 0.1);
+//            TA0CCR1 = (int)(TA0CCR0 * n);
+//            currentDS = dutyCycle;
+//            validDS = 0;
+//    }
+          // currentDS = dutyCycle;
     return validDS;
 }
