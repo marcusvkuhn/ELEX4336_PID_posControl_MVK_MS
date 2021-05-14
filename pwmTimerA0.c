@@ -30,7 +30,7 @@ unsigned int timerA0Init(unsigned int pwmFreq){
         P1DIR |= BIT2;
         P1SEL |= BIT2;
 
-        timerA0DutyCycleSet(0);
+        timerA0DutyCycleSet(0);             //initialize timer with 0% duty cycle
     }
 
     return validFreqInit;
@@ -53,18 +53,11 @@ char timerA0DutyCycleSet (unsigned char dutyCycle){
     volatile int validDS = -1, i;
     volatile double n = 0;
 
-    if(dutyCycle > 0 && dutyCycle < 11){
-        if(dutyCycle - currentDS > 4)
-            for(i = currentDS; i <= dutyCycle; i++){
-                n = (i * 0.1);
-                TA0CCR1 = (int)(TA0CCR0 * n);
-                __delay_cycles(RAMP_DELAY);          // 50ms delay per duty cycle change
-            }
-        else
-            n = (dutyCycle * 0.1);
-            TA0CCR1 = (int)(TA0CCR0 * n);
-            currentDS = dutyCycle;
-            validDS = 0;
+    if(dutyCycle > 0 && dutyCycle <= 100){
+        n = dutyCycle * 0.01;
+        TA0CCR1 = (int)(TA0CCR0 * n);
+        currentDS = dutyCycle;
+        validDS = 0;
     }
     return validDS;
 }

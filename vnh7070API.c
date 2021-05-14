@@ -7,11 +7,6 @@
  *  Created on: Jan 25, 2021
  *      Author: Raymond
  */
-#define IN_A BIT0
-#define IN_B BIT1
-#define SEL BIT2
-#define CW_CTRL 0x01
-#define CCW_CTRL 0x02
 
 char vnh7070InputCtrl (unsigned char ctrl){
     volatile int validInputCtrl = -1;

@@ -8,9 +8,7 @@
 #ifndef PWMTIMERA0_H_
 #define PWMTIMERA0_H_
 
-#define SMCLKFREQ 1048000
 #define SMCLK_20MHZ_D16 1250000
-#define RAMP_DELAY 52500
 
 unsigned int timerA0Init(unsigned int pwmFreq);
 char timerA0PwmFreqSet(unsigned int pwmFreq);

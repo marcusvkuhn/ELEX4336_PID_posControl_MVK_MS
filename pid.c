@@ -3,6 +3,8 @@
 
 #include "pid.h"
 #include "quadEncDec.h"
+#include "pwmTimerA0.h"
+#include "vnh7070API.h"
 
 /*
  * pid.c
@@ -11,34 +13,19 @@
  *      Author: Marcus
  */
 
-//void initPidTimerA1(int freq){
-//    volatile int m, validPwmFreq = -1;
-//
-//    // TA1CCTL0, use ACLK (32786hz), /1, up mode, clear and enable interrupts.
-//    TA1CTL = TASSEL_1 | ID__1 | MC_1 | TACLR | TAIE;
-//    TA1EX0 |= TAIDEX_0;    // expansion clk divider to 1
-//
-//    // find m value for given freq
-//    m = (int)(ACLKFREQ/freq);
-//
-//    /* write m to TA1CCR0,
-//     timer will count up it and trigger an interrupt to set control loop up update rate */
-//    if(m >= 9 && m <= 65356)
-//        TA1CCR0 = m - 1;
-//}
+void pidControlLoop(int Kp, int Ki, int Kd, double dt){
 
-void pidControlLoop(int Kp, int Ki, int Kd, int dt){
 
-    volatile int clamping = 0;
+    volatile int clamping = 0, numClamping = 0, sign = 0;    // sign = 1 is positive, sign = -1 is negative;
+
+    posCountDeg = posCount * DEG_PER_PULSE;
 
     // Control Logic
-    error = posDelta - posCount;
+    error = posTargetDeg - posCountDeg;
+
+    errorInt = errorInt + dt*error;
 
     errorDeriv = (error-errorPrev)/dt;
-
-    errorInt = errorInt + dt*1*error;
-
-    // prototype clamping algorithm
 
     controlCmd = Kp*error + Ki*errorInt + Kd*errorDeriv;
 
@@ -46,10 +33,16 @@ void pidControlLoop(int Kp, int Ki, int Kd, int dt){
     // result   =   (condition)   ?  (value if true)  :  (value if false)
     // saves value to result
 
-    controlCmdAW = (abs(controlCmd) > MAX_COMMAND) ? MAX_COMMAND : controlCmd;
+    if(controlCmd > 0){
+        controlCmdAW = (controlCmd > MAX_COMMAND) ? MAX_COMMAND : controlCmd;
+        sign = 1;
+    }
+    else if(controlCmd < 0){
+        controlCmdAW = (controlCmd < -MAX_COMMAND) ? MAX_COMMAND : controlCmd;
+        sign = -1;
+    }
 
     // compare the two actuator commands
-
     if (controlCmd != controlCmdAW){
         // checks whether sign of error and control command are equal by XOR
         // if they are both equal (00 or 11), XOR returns 0
@@ -57,40 +50,20 @@ void pidControlLoop(int Kp, int Ki, int Kd, int dt){
             clamping = 1;
     }
 
-    if (clamping)
+    if (clamping && sign == 1)
         controlCmd = MAX_COMMAND;
-
-    // Anti-windup
-//    if(abs(controlCmd) >= MAX_COMMAND && (((error >= 0) && (errorInt >= 0)) || ((error < 0) && (errorInt < 0)))){
-//
-//        if(antiWindup)
-//            errorInt = errorInt;
-//        else  // If no antiwindup
-//            errorInt = errorInt + dt*1*error;  // rectangular integration
-//        //P1OUT &= ~BIT0;
-//    }
-//    else
-//    {
-//        errorInt = errorInt + dt*1*error;  // rectangular integration
-//        //P1OUT |= BIT0;
-//    }
+    else if(clamping && sign == -1)
+        controlCmd = -MAX_COMMAND;
 
     errorPrev = error;
 
-//    if(controlCmd >= 0){
-//        // change to vnh7070 functions
-//        setDIR(0);
-//        setPWM(abs(controlCmd));
-//    }
-//    else{
-//        // change to vnh7070 functions
-//        setDIR(1);
-//        setPWM(abs(controlCmd));
-//    }
+    if(controlCmd >= 0){
+        vnh7070CW(currentDS);
+        timerA0DutyCycleSet(abs(controlCmd));
+    }
+    else if(controlCmd <= 0){
+        vnh7070CCW(currentDS);
+        timerA0DutyCycleSet(abs(controlCmd));
+    }
 
-//    if(abs(controlCmd) < MAX_COMMAND)
-//        //P1OUT &= ~BIT0;
-//    else
-//        //P1OUT |= BIT0;
-//
 }
